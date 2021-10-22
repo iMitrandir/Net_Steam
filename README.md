@@ -1,4 +1,4 @@
-# UE4NetworkingSimple
+# UE4 Steam
 
-## Test project for prototyping networking mechs 
+## Test project for prototyping steam mechs 
 The collection of different useful features for future reference.
