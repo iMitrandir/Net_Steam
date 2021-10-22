@@ -117,6 +117,7 @@ void UPuzzlePlatformsGameInstance::Host()
 		}
 	}	
 }
+
 void UPuzzlePlatformsGameInstance::JoinIP(const FString& IPAddr)
 {
 	UE_LOG(LogTemp, Warning, TEXT("NOT IMPLEMENTED"));
@@ -188,7 +189,7 @@ void UPuzzlePlatformsGameInstance::ExitGame()
 	PlayerController->ConsoleCommand("Exit");
 }
 
-void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool bSuccess)
+void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool bSuccess) 
 {
 	if(!bSuccess)
 	{
@@ -226,9 +227,13 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 	if(SessionInterface.IsValid())
 	{		    
 		FOnlineSessionSettings 	SessionSettings;
-		SessionSettings.bIsLANMatch = true;
+		SessionSettings.bIsLANMatch = false;
 		SessionSettings.NumPublicConnections = 2;
 		SessionSettings.bShouldAdvertise = true;
+		SessionSettings.bUsesPresence = true; // включение Presence для ссервера
+		//SessionSettings.BuildUniqueId = 0x00c89141;
+		SessionSettings.bAllowJoinViaPresence = true;
+	
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);    
 	}
 }
@@ -245,9 +250,17 @@ void UPuzzlePlatformsGameInstance::RefreshServerList()
 			
 	if(SessionSearch.IsValid())
 	{
+
+
+		//что мы ищем - устанавливаем настройки поиска Presence
+		//SessionSearch->bIsLanQuery = true; // LAN query
+
+		SessionSearch->MaxSearchResults = 100; // в туториале ставят 100 и выдает всех у кого есть лодди, но это не решает проблему. Решает проблему установка флага SessionSettings.bAllowJoinViaPresence = true 
+
+		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE,true, EOnlineComparisonOp::Equals); //Presence query
+
 		TSharedRef<FOnlineSessionSearch> OnlineSearchSettings = SessionSearch.ToSharedRef();
-		SessionSearch->bIsLanQuery = true; // LAN query
-				
+		
 		UE_LOG(LogTemp, Warning, TEXT("Find Sessions Process ......"));				
 				
 		SessionInterface->FindSessions(0,OnlineSearchSettings);

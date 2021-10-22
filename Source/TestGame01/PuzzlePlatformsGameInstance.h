@@ -85,8 +85,7 @@ class TESTGAME01_API UPuzzlePlatformsGameInstance : public UGameInstance, public
 	//интерфейсная ф-я, рефрешит список серверов по запросу
 	UFUNCTION(Exec)	
 	void RefreshServerList() override;
-
-	FOnlineSessionSearchResult SearchResult;
+	
 
 	void OnJoinSessionComplete(FName, EOnJoinSessionCompleteResult::Type);
 };
