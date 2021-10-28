@@ -10,6 +10,7 @@
 #include "Components/ScrollBox.h"
 #include "ServerRow.h"
 #include "Chaos/ChaosDebugDraw.h"
+#include "TestGame01/PuzzlePlatformsGameInstance.h"
 
 
 UMainMenu::UMainMenu()
@@ -37,8 +38,12 @@ bool UMainMenu::Initialize()
 	bool Success = Super::Initialize();
 	if(!Success) {return false;} //double check the pointers       
 
+	//todo: свичнуть менюшку
 	if(!ensure(HostBtn!=nullptr)) return false;  //double check the pointers
-	HostBtn->OnPressed.AddDynamic(this, &UMainMenu::HostServer);
+	HostBtn->OnPressed.AddDynamic(this, &UMainMenu::OpenHostMenu);
+
+	if(!ensure(HostGameBtn!=nullptr)) return false;  //double check the pointers
+	HostGameBtn->OnPressed.AddDynamic(this, &UMainMenu::HostServer);
 	
 	if(!ensure(JoinMenuBtn!=nullptr)) return false;  //double check the pointers
 	JoinMenuBtn->OnPressed.AddDynamic(this, &UMainMenu::OpenJoinMenu);
@@ -54,6 +59,9 @@ bool UMainMenu::Initialize()
 
 	if(!ensure(JoinSessionBtn_1!=nullptr)) return false;  //double check the pointers
 	JoinSessionBtn_1->OnPressed.AddDynamic(this, &UMainMenu::JoinSession);
+
+	if(!ensure(RefreshMenuBtn!=nullptr)) return false;  //double check the pointers
+	RefreshMenuBtn->OnPressed.AddDynamic(this, &UMainMenu::RefreshSession);
 	
 	return true;
 }
@@ -61,10 +69,12 @@ bool UMainMenu::Initialize()
 void UMainMenu::HostServer()
 {
 	UE_LOG(LogTemp, Warning, TEXT("HostServer pressed"));
-	
-	if(MenuInterface != nullptr)
+
+	FString SessionName = HostNameArea->GetText().ToString();     
+	if(MenuInterface != nullptr && SessionName!="")
 	{
-		MenuInterface->Host();
+		
+		MenuInterface->Host(SessionName);
 	}
 }
 
@@ -92,6 +102,11 @@ void UMainMenu::OpenMainMenu()
 	MenuSwitch->SetActiveWidget(MainMenuArea);
 }
 
+void UMainMenu::OpenHostMenu()
+{
+	MenuSwitch->SetActiveWidget(HostMenu); 
+}
+
 void UMainMenu::CloseGame()
 {
 	if(MenuInterface != nullptr)
@@ -115,7 +130,15 @@ void UMainMenu::JoinSession()
 
 }
 
-void UMainMenu::SetServerList(TArray<FString> ServerNames)
+void UMainMenu::RefreshSession()
+{
+	if(MenuInterface != nullptr)
+	{
+		MenuInterface->RefreshSession();
+	}
+}
+
+void UMainMenu::SetServerList(TArray<FServerData> ServerDatas)
 {
 	auto  World = this->GetWorld();
 	if(!ensure(World !=nullptr)){return;}
@@ -123,12 +146,15 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 	ServerList->ClearChildren();
 
 	int32 Index = 0; //init index of server row      
-	for(auto& ServerName : ServerNames)
+	for(auto& ServerData : ServerDatas)
 	{
 		auto RowWidget = CreateWidget<UServerRow>(World, ServerRowClass);
 		if(!ensure(RowWidget !=nullptr)){return;}
 
-		RowWidget->ServerName->SetText(FText::FromString(ServerName));
+		RowWidget->ServerName->SetText(FText::FromString(ServerData.Name));
+
+		RowWidget->PlayersCount->SetText(FText::FromString(FString::Printf(TEXT("%d / %d"), ServerData.CurrentPlayer, ServerData.MaxPlayers)));
+
 		RowWidget->Setup(this, Index);
 		++Index;
 
@@ -139,5 +165,20 @@ void UMainMenu::SetServerList(TArray<FString> ServerNames)
 
 void UMainMenu::SelectIndex(int32 Index)
 {
-	    SelectedIndex = Index;
+	SelectedIndex = Index;
+	UpdateChildren();
+}
+
+void UMainMenu::UpdateChildren()
+{
+	for(int32 i = 0; i < ServerList->GetChildrenCount(); i++)
+	{
+		auto Row = Cast<UServerRow>(ServerList->GetChildAt(i));
+		if( Row != nullptr)
+		{
+			Row->IsSelected = (SelectedIndex.IsSet() && SelectedIndex.GetValue()==i);
+			//Row->SetColorAndOpacity(FLinearColor::Red);
+		}
+
+	}
 }

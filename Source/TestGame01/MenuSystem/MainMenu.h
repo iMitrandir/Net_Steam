@@ -6,6 +6,19 @@
 #include "MenuWidget.h"
 #include "MainMenu.generated.h"
 
+
+
+USTRUCT()
+struct FServerData
+{
+	GENERATED_BODY()
+
+	FString Name;
+	int16 CurrentPlayer;
+	int16 MaxPlayers;
+	FString HostUsername;
+};
+
 /**
  * 
  */
@@ -25,8 +38,21 @@ private:
 	class UTextBlock* MainMenuTxt = nullptr;
 
 	// the name of variable and the name of the widget in the UMG must be the same, for bind to work correctly
+	// открывает меню ввода имени хоста
 	UPROPERTY(meta = (BindWidget))
 	class UButton* HostBtn = nullptr;
+
+	// открывает создание хоста
+	UPROPERTY(meta = (BindWidget))
+	class UButton* HostGameBtn = nullptr;
+
+	// открывает создание хоста
+	UPROPERTY(meta = (BindWidget))	 
+	class UButton* CancelHostGameBtn = nullptr; 
+
+	//поле для ввода имени хоста
+	UPROPERTY(meta = (BindWidget))
+	class UEditableText* HostNameArea= nullptr;
 
 	// the name of variable and the name of the widget in the UMG must be the same, for bind to work correctly
 	UPROPERTY(meta = (BindWidget))
@@ -50,6 +76,10 @@ private:
 
 	// the name of variable and the name of the widget in the UMG must be the same, for bind to work correctly
 	UPROPERTY(meta = (BindWidget))
+	class UWidget* HostMenu= nullptr;
+
+	// the name of variable and the name of the widget in the UMG must be the same, for bind to work correctly
+	UPROPERTY(meta = (BindWidget))
 	class UWidget* MainMenuArea= nullptr;
 	
 	// the name of variable and the name of the widget in the UMG must be the same, for bind to work correctly
@@ -63,6 +93,9 @@ private:
 	// the name of variable and the name of the widget in the UMG must be the same, for bind to work correctly. кнопка относящаяяся к ServerList функционалу
 	UPROPERTY(meta = (BindWidget))
 	class UButton* JoinSessionBtn_1=nullptr;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* RefreshMenuBtn=nullptr;    
 
 	// the name of variable and the name of the widget in the UMG must be the same, for bind to work correctly. Кнопка относящаяяся к функционалу ввода прямого IP
 	UPROPERTY(meta = (BindWidget))
@@ -100,6 +133,10 @@ public:
 	UFUNCTION()
 	void OpenMainMenu();
 
+	//switch to host menu
+	UFUNCTION()	
+	void OpenHostMenu();
+
 	//exit the game completely
 	UFUNCTION()	 
 	void CloseGame();
@@ -108,10 +145,16 @@ public:
 	UFUNCTION()	 
 	void JoinSession();
 
+	UFUNCTION()		 
+	void RefreshSession();
+
 	//
-	void SetServerList(TArray<FString>);
+	void SetServerList(TArray<FServerData>);
 
 	//выбор индекса сессии-сервера
 	void SelectIndex(int32 Index);
 
+	//иотод для апдейта инфв о сервер роу кнопках
+	void UpdateChildren();
+	
 };

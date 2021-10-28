@@ -24,7 +24,7 @@ class TESTGAME01_API IMenuInterface
 public:
 
 	//host a server
-	virtual void Host() = 0;
+	virtual void Host(FString) = 0;
 	
 	//connect to server by typing IP - NOT IMPLEMENTED
 	virtual void JoinIP(const FString&) = 0;
@@ -40,6 +40,8 @@ public:
 
 	//update server list in join menu
 	virtual  void RefreshServerList() = 0;
+
+	virtual void RefreshSession() = 0;
 
 
 };

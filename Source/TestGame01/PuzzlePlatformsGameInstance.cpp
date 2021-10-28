@@ -15,7 +15,7 @@
 #include "Kismet/GameplayStatics.h"
 
 
-static const FName SESSION_NAME = TEXT("TestSession01"); 
+
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance()
 {
@@ -68,7 +68,6 @@ void UPuzzlePlatformsGameInstance::LoadMenu()
 {
 	//double check that the BP exists
 	if(!ensure(MenuClass!=nullptr)){return;}
-
 	
 	Menu = CreateWidget<UMainMenu>(this, MenuClass);
 
@@ -99,18 +98,18 @@ void UPuzzlePlatformsGameInstance::QuitMenuCall()
 	QuitMenu->SetMenuInterface(this);           
 }
 
-void UPuzzlePlatformsGameInstance::Host()
+void UPuzzlePlatformsGameInstance::Host(FString Name)
 {
-
+	SESSION_NAME = FName(Name);
 	if(SessionInterface.IsValid())
-	{
+	{                           
 		auto ExistingSession = SessionInterface->GetNamedSession(SESSION_NAME);
 		if(ExistingSession!=nullptr)
 		{
 			//вызывает каллбек и выполняет SessionDestroy() после удаления текущей сессии.
 			SessionInterface->DestroySession(SESSION_NAME);
 		}
-		else
+		else                             
 		{
 			//создаем сессию при нажантии на кнопку хост
 			CreateSession();
@@ -189,6 +188,36 @@ void UPuzzlePlatformsGameInstance::ExitGame()
 	PlayerController->ConsoleCommand("Exit");
 }
 
+void UPuzzlePlatformsGameInstance::CreateSession()
+{
+	//так как процессы создания сессии ассинхронный, нельзя быть уверенным,что интерфейс еще существует
+	if(SessionInterface.IsValid())
+	{		    
+		FOnlineSessionSettings 	SessionSettings;
+
+		//если стим не используется на пример при запуске с -nostea то будет использовать NULL subsystem
+		if(IOnlineSubsystem::Get()->GetSubsystemName() == "NULL")
+		{
+			SessionSettings.bIsLANMatch = true;
+		}
+		else
+		{
+			SessionSettings.bIsLANMatch = false;
+         
+		}
+		SessionSettings.NumPublicConnections = 2;
+		SessionSettings.bShouldAdvertise = true;
+		SessionSettings.bUsesPresence = true; // включение Presence для ссервера
+		//SessionSettings.BuildUniqueId = 0x00c89141;
+		SessionSettings.bAllowJoinViaPresence = true;
+
+		//кастомные настройки
+		SessionSettings.Set(FName("Test"), SESSION_NAME.ToString(), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);    
+	}
+}
+
 void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bool bSuccess) 
 {
 	if(!bSuccess)
@@ -221,21 +250,11 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 	}   
 }
 
-void UPuzzlePlatformsGameInstance::CreateSession()
+
+
+void UPuzzlePlatformsGameInstance::RefreshSession()
 {
-	//так как процессы создания сессии ассинхронный, нельзя быть уверенным,что интерфейс еще существует
-	if(SessionInterface.IsValid())
-	{		    
-		FOnlineSessionSettings 	SessionSettings;
-		SessionSettings.bIsLANMatch = false;
-		SessionSettings.NumPublicConnections = 2;
-		SessionSettings.bShouldAdvertise = true;
-		SessionSettings.bUsesPresence = true; // включение Presence для ссервера
-		//SessionSettings.BuildUniqueId = 0x00c89141;
-		SessionSettings.bAllowJoinViaPresence = true;
-	
-		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);    
-	}
+	RefreshServerList();
 }
 
 void UPuzzlePlatformsGameInstance::RefreshServerList()
@@ -255,7 +274,7 @@ void UPuzzlePlatformsGameInstance::RefreshServerList()
 		//что мы ищем - устанавливаем настройки поиска Presence
 		//SessionSearch->bIsLanQuery = true; // LAN query
 
-		SessionSearch->MaxSearchResults = 100; // в туториале ставят 100 и выдает всех у кого есть лодди, но это не решает проблему. Решает проблему установка флага SessionSettings.bAllowJoinViaPresence = true 
+		SessionSearch->MaxSearchResults = 500; // в туториале ставят 100 и выдает всех у кого есть лодди, но это не решает проблему. Решает проблему установка флага SessionSettings.bAllowJoinViaPresence = true 
 
 		SessionSearch->QuerySettings.Set(SEARCH_PRESENCE,true, EOnlineComparisonOp::Equals); //Presence query
 
@@ -269,19 +288,40 @@ void UPuzzlePlatformsGameInstance::RefreshServerList()
 
 void UPuzzlePlatformsGameInstance::OnFindSessionComplete(bool bSuccess)
 {
+	
 	if(bSuccess && SessionSearch.IsValid() && Menu != nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Session found"));
 
-		TArray<FString> SessionNames;		
-		auto SessionsArray =  SessionSearch->SearchResults;
-	
+		auto SessionsArray =  SessionSearch->SearchResults;		   
+
+		TArray<FServerData> SessionDatas;		
+		/*SessionNames.Add("Test Session 1");     
+		SessionNames.Add("Test Session 2");
+		SessionNames.Add("Test Session 3");  */ 
 		for(const auto& SessionInstance : SessionsArray)
 		{
+
 			UE_LOG(LogTemp, Warning, TEXT("Session name: %s"), *SessionInstance.GetSessionIdStr());
-			SessionNames.Add(SessionInstance.GetSessionIdStr());  
+													
+			FServerData SessionInstanceData;
+			FString OutSessionCustomName;
+			
+			SessionInstance.Session.SessionSettings.Get(FName("Test"),OutSessionCustomName);      
+			SessionInstanceData.Name = OutSessionCustomName; // SessionInstance.GetSessionIdStr();
+			SessionInstanceData.CurrentPlayer = SessionInstance.Session.NumOpenPublicConnections;
+			SessionInstanceData.MaxPlayers = SessionInstance.Session.SessionSettings.NumPublicConnections;
+			SessionInstanceData.HostUsername = SessionInstance.Session.OwningUserName;
+
+			//передаю структуру с установленными параметрами
+			SessionDatas.Add(SessionInstanceData);  
 		}
-		Menu->SetServerList(SessionNames);
+		Menu->SetServerList(SessionDatas);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Session NOT found"));
+  
 	}
 }
 

@@ -20,6 +20,14 @@ class TESTGAME01_API UServerRow : public UUserWidget
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ServerName = nullptr;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* PlayersCount = nullptr;
+	
+
+	// is the session selected or not
+	UPROPERTY(BlueprintReadOnly)
+	bool IsSelected = false;
+
 	 //settingup the current serverrow with data
 	void Setup(class UMainMenu* InParent, uint32 InIndex);
 

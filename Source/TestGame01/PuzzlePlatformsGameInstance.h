@@ -38,8 +38,10 @@ class TESTGAME01_API UPuzzlePlatformsGameInstance : public UGameInstance, public
 
 	//интерфейсная ф-я,
 	UFUNCTION(Exec)
-	void Host() override; // создасть консольную команду Host, также так как мы насоедовались от интерфейса в котором есть функция с таким же именем то теперь это относится к интерфейсной ыункции
+	void Host(FString Name) override; // создасть консольную команду Host, также так как мы насоедовались от интерфейса в котором есть функция с таким же именем то теперь это относится к интерфейсной ыункции
 
+	FName SESSION_NAME = TEXT("shfakuefbhajsefalkjefjksdnfvlzjks");
+	
 	//интерфейсная ф-я, подследенится к выбранной в списке сессии
 	UFUNCTION()
 	void Join(int32 Index) override; 
@@ -82,6 +84,9 @@ class TESTGAME01_API UPuzzlePlatformsGameInstance : public UGameInstance, public
 	//создает сессию
 	void CreateSession();
 
+	// рефрешит список сессий
+	void RefreshSession() override;
+	
 	//интерфейсная ф-я, рефрешит список серверов по запросу
 	UFUNCTION(Exec)	
 	void RefreshServerList() override;
