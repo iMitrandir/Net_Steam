@@ -30,7 +30,9 @@ UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance()
 	if (QuitMenuBPClass.Class != NULL)
 	{
 		QuitMenuClass = QuitMenuBPClass.Class;
-	}		 
+	}
+
+	SESSION_NAME = TEXT("None");
 }
 
 void UPuzzlePlatformsGameInstance::Init()
@@ -237,7 +239,7 @@ void UPuzzlePlatformsGameInstance::OnCreateSessionComplete(FName SessionName, bo
 	}
 
 	//on call of thos function - specify the server as a listener server, makes the client which is calling this function as a server 
-	World->ServerTravel("/Game/Static/Maps/ThirdPersonExampleMap?listen");      
+	World->ServerTravel("/Game/Static/Maps/Lobby?listen");      
 }
 
 void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, bool bSuccess)
@@ -249,8 +251,6 @@ void UPuzzlePlatformsGameInstance::OnDestroySessionComplete(FName SessionName, b
 		  CreateSession();
 	}   
 }
-
-
 
 void UPuzzlePlatformsGameInstance::RefreshSession()
 {

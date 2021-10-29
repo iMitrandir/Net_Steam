@@ -40,7 +40,7 @@ class TESTGAME01_API UPuzzlePlatformsGameInstance : public UGameInstance, public
 	UFUNCTION(Exec)
 	void Host(FString Name) override; // создасть консольную команду Host, также так как мы насоедовались от интерфейса в котором есть функция с таким же именем то теперь это относится к интерфейсной ыункции
 
-	FName SESSION_NAME = TEXT("shfakuefbhajsefalkjefjksdnfvlzjks");
+	FName SESSION_NAME;
 	
 	//интерфейсная ф-я, подследенится к выбранной в списке сессии
 	UFUNCTION()
