@@ -15,7 +15,7 @@
 #include "Kismet/GameplayStatics.h"
 
 
-
+static const FName SESSION_KEY = FName("TestSession");
 
 UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance()
 {
@@ -32,7 +32,7 @@ UPuzzlePlatformsGameInstance::UPuzzlePlatformsGameInstance()
 		QuitMenuClass = QuitMenuBPClass.Class;
 	}
 
-	SESSION_NAME = TEXT("None");
+	SESSION_NAME = TEXT("GameSession");
 }
 
 void UPuzzlePlatformsGameInstance::Init()
@@ -214,8 +214,8 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 		SessionSettings.bAllowJoinViaPresence = true;
 
 		//кастомные настройки
-		SessionSettings.Set(FName("Test"), SESSION_NAME.ToString(), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-
+		SessionSettings.Set(SESSION_KEY, SESSION_NAME.ToString(), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+		
 		SessionInterface->CreateSession(0, SESSION_NAME, SessionSettings);    
 	}
 }
@@ -307,7 +307,7 @@ void UPuzzlePlatformsGameInstance::OnFindSessionComplete(bool bSuccess)
 			FServerData SessionInstanceData;
 			FString OutSessionCustomName;
 			
-			SessionInstance.Session.SessionSettings.Get(FName("Test"),OutSessionCustomName);      
+			SessionInstance.Session.SessionSettings.Get(SESSION_KEY,OutSessionCustomName);      
 			SessionInstanceData.Name = OutSessionCustomName; // SessionInstance.GetSessionIdStr();
 			SessionInstanceData.CurrentPlayer = SessionInstance.Session.NumOpenPublicConnections;
 			SessionInstanceData.MaxPlayers = SessionInstance.Session.SessionSettings.NumPublicConnections;
