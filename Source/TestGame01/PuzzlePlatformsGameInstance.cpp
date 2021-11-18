@@ -172,6 +172,14 @@ void UPuzzlePlatformsGameInstance::OnJoinSessionComplete(FName SessionName, EOnJ
 	}
 }
 
+void UPuzzlePlatformsGameInstance::StartSession()
+{
+	if(SessionInterface.IsValid())
+	{
+		SessionInterface->StartSession(SESSION_NAME);
+	}
+}
+
 void UPuzzlePlatformsGameInstance::QuitGame()
 {
 	 //UGameplayStatics::OpenLevel(GetWorld(), "/Game/Static/Maps/MenuLevel");
@@ -207,7 +215,7 @@ void UPuzzlePlatformsGameInstance::CreateSession()
 			SessionSettings.bIsLANMatch = false;
          
 		}
-		SessionSettings.NumPublicConnections = 2;
+		SessionSettings.NumPublicConnections = 5;
 		SessionSettings.bShouldAdvertise = true;
 		SessionSettings.bUsesPresence = true; // включение Presence для ссервера
 		//SessionSettings.BuildUniqueId = 0x00c89141;

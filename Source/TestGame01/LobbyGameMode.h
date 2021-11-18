@@ -26,5 +26,9 @@ public:
 
 private:
 	int32 count = 0;
+
+	FTimerHandle GameStartTimer;
+
+	void StartGame();
 	
 };

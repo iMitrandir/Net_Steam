@@ -93,6 +93,8 @@ class TESTGAME01_API UPuzzlePlatformsGameInstance : public UGameInstance, public
 	
 
 	void OnJoinSessionComplete(FName, EOnJoinSessionCompleteResult::Type);
+
+	void StartSession();
 };
 
 
